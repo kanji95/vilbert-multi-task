@@ -81,7 +81,7 @@ class FeatureExtractor:
 
         load_state_dict(model, checkpoint.pop("model"))
 
-        model.to("cpu")
+        model.to("cuda")
         model.eval()
         return model
 
@@ -183,7 +183,7 @@ class FeatureExtractor:
         # Image dimensions should be divisible by 32, to allow convolutions
         # in detector to work
         current_img_list = to_image_list(img_tensor, size_divisible=32)
-        current_img_list = current_img_list.to("cpu")
+        current_img_list = current_img_list.to("cuda")
 
         with torch.no_grad():
             output = self.detection_model(current_img_list)
