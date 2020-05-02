@@ -120,6 +120,8 @@ class FeatureExtractor:
         self, output, im_scales, im_infos, feature_name="fc6", conf_thresh=0
     ):
         batch_size = len(output[0]["proposals"])
+        #print("batch_size is {}".format(batch_size), flush=True)
+
         n_boxes_per_image = [len(boxes) for boxes in output[0]["proposals"]]
         score_list = output[0]["scores"].split(n_boxes_per_image)
         score_list = [torch.nn.functional.softmax(x, -1) for x in score_list]
@@ -210,6 +212,7 @@ class FeatureExtractor:
         file_base_name = file_base_name + ".npy"
 
         np.save(os.path.join(self.args.output_folder, file_base_name), info)
+        print("saved features to {}".format(os.path.join(self.args.output_folder, file_base_name)), flush=True)
 
     def extract_features(self):
         image_dir = self.args.image_dir

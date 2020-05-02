@@ -37,7 +37,6 @@ data/
 save/
 logs/
 results/
-tools/refer
 
 # Checkpoints directory
 checkpoints/

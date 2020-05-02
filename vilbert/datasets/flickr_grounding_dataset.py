@@ -261,7 +261,7 @@ class FlickrGroundingDataset(Dataset):
 
         with open(
             os.path.join(
-                "/checkpoint/vedanuj/datasets/flickr30k", "%s.txt" % self.split
+                self.dataroot, "%s.txt" % self.split
             ),
             "r",
         ) as f:
@@ -272,12 +272,12 @@ class FlickrGroundingDataset(Dataset):
                 continue
             annotation = get_annotations(
                 os.path.join(
-                    "/checkpoint/vedanuj/datasets/flickr30k/Annotations", img + ".xml"
+                    self.dataroot + 'Annotations', img + ".xml"
                 )
             )
             sentences = get_sentence_data(
                 os.path.join(
-                    "/checkpoint/vedanuj/datasets/flickr30k/Sentences", img + ".txt"
+                    self.dataroot + 'Sentences', img + ".txt"
                 )
             )
 
