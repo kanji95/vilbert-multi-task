@@ -22,7 +22,10 @@ echo "copying features from share3 to ssd_scratch"
 
 scp -r kanishk@ada:/share3/kanishk/flickr30k /ssd_scratch/cvit/kanishk/
 
-python3 train_tasks.py --bert_model bert-base-uncased --from_pretrained data/multi_task_model.bin --config_file config/bert_base_6layer_6conect.json --tasks 18 --lr_scheduler 'warmup_linear' --train_iter_gap 4 --task_specific_tokens --save_name finetune_from_multi_task_model
+#python3 train_tasks.py --bert_model bert-base-uncased --from_pretrained data/multi_task_model.bin --config_file config/bert_base_6layer_6conect.json --resume_file save/FlickrGrounding_bert_base_6layer_6conect-finetune_from_multi_task_model/pytorch_ckpt_latest.tar --tasks 18 --lr_scheduler 'warmup_linear' --train_iter_gap 4 --task_specific_tokens --save_name finetune_from_multi_task_model
+
+python3 train_tasks.py --bert_model bert-base-uncased --from_pretrained save/FlickrGrounding_bert_base_6layer_6conect-finetune_from_multi_task_model/pytorch_model_13.bin --config_file config/bert_base_6layer_6conect.json --resume_file save/FlickrGrounding_bert_base_6layer_6conect-finetune_from_multi_task_model/pytorch_ckpt_latest.tar --tasks 18 --lr_scheduler 'warmup_linear' --train_iter_gap 4 --task_specific_tokens --save_name finetune_from_multi_task_model
+
 
 #du -h /ssd_scratch/cvit/kanishk/flickr30k_lmdb
 
