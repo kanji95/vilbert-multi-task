@@ -15,8 +15,7 @@ module load cudnn/7-cuda-10.0
 
 set -e
 
-if [ -d "/ssd_scratch/cvit/kanishk/flickr30k" ]
-then
+if [ -d "/ssd_scratch/cvit/kanishk/flickr30k" ]; then
     echo "folder exists, proceed with training"
 else
     mkdir -p /ssd_scratch/cvit/kanishk/
