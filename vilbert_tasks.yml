@@ -326,7 +326,7 @@ TASK18:
   val_annotations_jsonpath: ''
   max_seq_length: 24
   max_region_num: 200
-  batch_size: 64
+  batch_size: 32
   train_split: train
   val_split: val
   lr: 0.000002
