@@ -6,7 +6,7 @@
 #SBATCH --mem-per-cpu=3000
 #SBATCH --gres=gpu:4
 #SBATCH --time=2-00:00:00
-#SBATCH --job-name=vigil
+#SBATCH --job-name=vilbert_gl
 #SBATCH --mail-user=kanishk.jain@alumni.iiit.ac.in
 #SBATCH --mail-type=ALL
 
