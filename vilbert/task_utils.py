@@ -349,6 +349,8 @@ def ForwardModelsTrain(
         _, select_idx = torch.max(vision_logit, dim=1)
         select_target = target.squeeze(2).gather(1, select_idx.view(-1, 1))
         batch_score = float(torch.sum(select_target > 0.5)) / batch_size
+        print("vision_logit: {}, loss: {}, select_idx: {}, select_target: {}, batch_score: {}".format(vision_logit, loss, select_idx, select_target, batch_score), flush=True)
+        print("vision_logit_shape: {}, select_idx_shape: {}, select_target_shape: {}".format(vision_logit.shape, select_idx.shape, select_target.shape), flush=True)
 
     elif task_cfg[task_id]["type"] == "V-logit-mc":
         vision_logit = vision_logit[:, 101:]
