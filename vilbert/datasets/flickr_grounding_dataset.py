@@ -424,6 +424,7 @@ class FlickrGroundingDataset(Dataset):
             segment_ids,
             co_attention_mask,
             image_id,
+            spatials_ori
         )
 
     def __len__(self):
