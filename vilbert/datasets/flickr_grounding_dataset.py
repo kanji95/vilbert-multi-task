@@ -4,6 +4,7 @@
 # LICENSE file in the root directory of this source tree.
 
 import os
+import json
 
 import torch
 from torch.utils.data import Dataset
@@ -194,6 +195,7 @@ class FlickrGroundingDataset(Dataset):
         padding_index: int = 0,
         max_seq_length: int = 20,
         max_region_num: int = 60,
+        grid_json: str = "phrase_grid.json",
     ):
         self.split = split
         self.num_labels = 1
@@ -207,6 +209,11 @@ class FlickrGroundingDataset(Dataset):
         self.entries = self._load_annotations(clean_datasets)
 
         self.max_region_num = max_region_num
+        
+        self.grid_data = None
+        if grid_json:
+            with open(os.path.join(self.dataroot, grid_json), 'r') as f:
+                self.grid_data = json.load(f)
 
         clean_train = "_cleaned" if clean_datasets else ""
 
@@ -348,6 +355,7 @@ class FlickrGroundingDataset(Dataset):
         entry = self.entries[index]
 
         image_id = entry["image_id"]
+        caption_id = entry["sent_id"]
         ref_box = entry["refBox"]
 
         features, num_boxes, boxes, boxes_ori = self._image_features_reader[image_id]
@@ -413,6 +421,11 @@ class FlickrGroundingDataset(Dataset):
         caption = entry["token"]
         input_mask = entry["input_mask"]
         segment_ids = entry["segment_ids"]
+        
+        grid = self.grid_data.get(image_id, {}).get(caption_id)
+        grid_vec = torch.zeros(14*14) 
+        grid_vec[grid] = 1
+        grid_vec = torch.FloatTensor(grid_vec)
 
         return (
             features,
@@ -424,7 +437,7 @@ class FlickrGroundingDataset(Dataset):
             segment_ids,
             co_attention_mask,
             image_id,
-            spatials_ori
+            grid_vec
         )
 
     def __len__(self):
