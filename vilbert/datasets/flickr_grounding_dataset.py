@@ -422,7 +422,7 @@ class FlickrGroundingDataset(Dataset):
         input_mask = entry["input_mask"]
         segment_ids = entry["segment_ids"]
         
-        grid = self.grid_data.get(image_id, {}).get(caption_id)
+        grid = self.grid_data.get(str(image_id), {}).get(str(caption_id))
         grid_vec = torch.zeros(14*14) 
         grid_vec[grid] = 1
         grid_vec = torch.FloatTensor(grid_vec)
