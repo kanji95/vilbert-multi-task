@@ -427,14 +427,14 @@ class FlickrGroundingDataset(Dataset):
         grid_vec[grid] = 1
         grid_vec = torch.FloatTensor(grid_vec)
         
-        grid_vec = grid_vec.view(14, 14)
-        grid_map = torch.zeros((448, 448))
+        #grid_vec = grid_vec.view(14, 14)
+        #grid_map = torch.zeros((448, 448))
         
-        for i in range(14):
-            for j in range(14):
-                grid_map[32*i:32*i+32, 32*j:32*j+32] = grid_vec[i, j]
+        #for i in range(14):
+        #    for j in range(14):
+        #        grid_map[32*i:32*i+32, 32*j:32*j+32] = grid_vec[i, j]
         
-        grid_map = grid_map.unsqueeze(dim=1)
+        #grid_map = grid_map.unsqueeze(dim=1)
 
         return (
             features,
@@ -446,7 +446,7 @@ class FlickrGroundingDataset(Dataset):
             segment_ids,
             co_attention_mask,
             image_id,
-            grid_map
+            grid_vec
         )
 
     def __len__(self):
