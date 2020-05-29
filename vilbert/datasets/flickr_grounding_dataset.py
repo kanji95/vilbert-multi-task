@@ -195,7 +195,7 @@ class FlickrGroundingDataset(Dataset):
         padding_index: int = 0,
         max_seq_length: int = 20,
         max_region_num: int = 60,
-        grid_json: str = "phrase_grid_14x14.json",
+        target_file: str,
     ):
         self.split = split
         self.num_labels = 1
@@ -210,10 +210,9 @@ class FlickrGroundingDataset(Dataset):
 
         self.max_region_num = max_region_num
         
-        self.grid_data = None
-        if grid_json:
-            with open(os.path.join(self.dataroot, grid_json), 'r') as f:
-                self.grid_data = json.load(f)
+        self.target_dim = int(target_file.split(".")[0][-2:])
+        with open(os.path.join(self.dataroot, target_file), 'r') as f:
+            self.target_data = json.load(f)
 
         clean_train = "_cleaned" if clean_datasets else ""
 
@@ -422,22 +421,13 @@ class FlickrGroundingDataset(Dataset):
         input_mask = entry["input_mask"]
         segment_ids = entry["segment_ids"]
         
-        indices, values = self.grid_data.get(str(image_id), {}).get(str(caption_id))
-        grid_vec = torch.zeros(14*14) 
+        indices, values = self.target_data.get(str(image_id), {}).get(str(caption_id))
+        grid_vec = torch.zeros(self.target_dim*self.target_dim) 
         for idx in range(len(indices)):
             index = indices[idx]
             grid_vec[index] = values[idx]
-        #grid_vec[grid] = 1
+            
         grid_vec = torch.FloatTensor(grid_vec)
-        
-        #grid_vec = grid_vec.view(14, 14)
-        #grid_map = torch.zeros((448, 448))
-        
-        #for i in range(14):
-        #    for j in range(14):
-        #        grid_map[32*i:32*i+32, 32*j:32*j+32] = grid_vec[i, j]
-        
-        #grid_map = grid_map.unsqueeze(dim=1)
 
         return (
             features,
