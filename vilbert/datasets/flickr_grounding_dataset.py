@@ -195,7 +195,7 @@ class FlickrGroundingDataset(Dataset):
         padding_index: int = 0,
         max_seq_length: int = 20,
         max_region_num: int = 60,
-        target_file: str,
+        target_file: str = '',
     ):
         self.split = split
         self.num_labels = 1
