@@ -196,6 +196,8 @@ class tbLogger(object):
         self.masked_v_loss_val = {task_id: 0 for task_id in task_ids}
         self.next_sentense_loss_val = {task_id: 0 for task_id in task_ids}
 
+        self.task_time = {task_id: 0 for task_id in task_ids}
+
     def __getstate__(self):
         d = dict(self.__dict__)
         del d["logger"]
@@ -216,7 +218,7 @@ class tbLogger(object):
         if self.save_logger:
             self.logger.add_scalar(split + "/" + key, val, step)
 
-    def step_train(self, epochId, stepId, loss, score, norm, task_id, split):
+    def step_train(self, epochId, stepId, loss, score, norm, task_id, split, time):
 
         self.task_loss[task_id] += loss
         self.task_loss_tmp[task_id] += loss
@@ -224,6 +226,7 @@ class tbLogger(object):
         self.task_norm_tmp[task_id] += norm
         self.task_step[task_id] += self.gradient_accumulation_steps
         self.task_step_tmp[task_id] += self.gradient_accumulation_steps
+        self.task_time[task_id] = time
         self.epochId = epochId
 
         # plot on tensorboard.
@@ -374,7 +377,7 @@ class tbLogger(object):
             if self.task_num_iters[task_id] > 0:
                 if self.task_step_tmp[task_id]:
                     lossInfo += (
-                        "[%s]: iter %d Ep: %.2f loss %.3f score %.3f lr %.6g "
+                        "[%s]: iter %d Ep: %.2f loss %.3f score %.3f lr %.6g elapsed %.3f"
                         % (
                             self.task_id2name[task_id],
                             self.task_step[task_id],
@@ -386,6 +389,7 @@ class tbLogger(object):
                             / float(self.task_step_tmp[task_id]),
                             self.task_norm_tmp[task_id]
                             / float(self.task_step_tmp[task_id]),
+                            self.task_time[task_id],
                         )
                     )
 

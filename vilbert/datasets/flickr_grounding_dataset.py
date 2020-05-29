@@ -195,7 +195,7 @@ class FlickrGroundingDataset(Dataset):
         padding_index: int = 0,
         max_seq_length: int = 20,
         max_region_num: int = 60,
-        grid_json: str = "phrase_grid.json",
+        grid_json: str = "phrase_grid_14x14.json",
     ):
         self.split = split
         self.num_labels = 1
@@ -422,9 +422,12 @@ class FlickrGroundingDataset(Dataset):
         input_mask = entry["input_mask"]
         segment_ids = entry["segment_ids"]
         
-        grid = self.grid_data.get(str(image_id), {}).get(str(caption_id))
+        indices, values = self.grid_data.get(str(image_id), {}).get(str(caption_id))
         grid_vec = torch.zeros(14*14) 
-        grid_vec[grid] = 1
+        for idx in range(len(indices)):
+            index = indices[idx]
+            grid_vec[index] = values[idx]
+        #grid_vec[grid] = 1
         grid_vec = torch.FloatTensor(grid_vec)
 
         return (
