@@ -4,6 +4,11 @@ import logging
 import os
 import random
 from io import open
+
+import matplotlib.pyplot as plt
+
+import yaml
+from easydict import EasyDict as edict
 from bisect import bisect
 
 from time import gmtime, strftime
@@ -18,13 +23,16 @@ import torch.nn.functional as F
 
 from torch.utils.data import DataLoader
 
-from pytorch_pretrained_bert.tokenization import BertTokenizer
+# from pytorch_pretrained_bert.tokenization import BertTokenizer
+from pytorch_transformers.tokenization_bert import BertTokenizer
 
 from torch.nn import CrossEntropyLoss
 
 from vilbert.vilbert import BertConfig
+# from vilbert.task_utils import LoadDatasets
 from vilbert.datasets._image_features_reader import ImageFeaturesH5Reader
 from vilbert.datasets.flickr_grounding_dataset import FlickrGroundingDataset
+from vilbert.datasets.refer_expression_dataset import ReferExpressionDataset
 
 from block import fusions
 
@@ -99,17 +107,23 @@ def main():
     # Data files for FOIL task.
     parser.add_argument(
         "--features_h5path",
-        default="data/datasets/flickr30k/flickr30k_resnext152_faster_rcnn_genome.lmdb",
+        default="data/datasets/refcoco/refcoco_unc/refcoco_resnext152_faster_rcnn_genome.lmdb",
     )
     parser.add_argument(
         "--gt_features_h5path",
-        default="data/datasets/flickr30k/flickr30k_gt_resnext152_faster_rcnn_genome.lmdb",
+        default="data/datasets/refcoco/refcoco_unc/refcoco_gt_resnext152_faster_rcnn_genome.lmdb",
     )
 
     parser.add_argument("--instances-jsonpath", default="data/referExpression")
     parser.add_argument("--task", default="refcoco+")
 
     # Required parameters
+    parser.add_argument(
+        "--in_memory",
+        default=False,
+        type=bool,
+        help="whether use chunck for parallel training.",
+    )
     parser.add_argument(
         "--bert_model",
         default="bert-base-uncased",
@@ -141,12 +155,21 @@ def main():
     )
     # Other parameters
     parser.add_argument(
+        "--clean_train_sets",
+        default=True,
+        type=bool,
+        help="whether clean train sets for multitask data.",
+    )
+    parser.add_argument(
         "--max_seq_length",
         default=30,
         type=int,
         help="The maximum total input sequence length after WordPiece tokenization. \n"
         "Sequences longer than this will be truncated, and sequences shorter \n"
         "than this will be padded.",
+    )
+    parser.add_argument(
+        "--tasks", default="", type=str, help="1-2-3... training task separate by -"
     )
     parser.add_argument(
         "--train_batch_size",
@@ -216,6 +239,8 @@ def main():
     )
 
     args = parser.parse_args()
+    # with open("vilbert_tasks.yml", "r") as f:
+    #     task_cfg = edict(yaml.safe_load(f))
 
     # Declare path to save checkpoints.
     config = BertConfig.from_json_file(args.config_file)
@@ -243,8 +268,22 @@ def main():
     gt_image_features_reader = ImageFeaturesH5Reader(
         args.gt_features_h5path, True)
 
-    dataset = FlickrGroundingDataset(task="FlickrGrounding",
-                                     dataroot="data/datasets/flickr30k/",
+    # dataset = FlickrGroundingDataset(task="FlickrGrounding",
+    #                                  dataroot="data/datasets/flickr30k/",
+    #                                  annotations_jsonpath="",
+    #                                  split="val",
+    #                                  image_features_reader=image_features_reader,
+    #                                  gt_image_features_reader=gt_image_features_reader,
+    #                                  tokenizer=tokenizer,
+    #                                  bert_model=args.bert_model,
+    #                                  clean_datasets=True,
+    #                                  padding_index=0,
+    #                                  max_seq_length=24,
+    #                                  max_region_num=200,
+    #                                  )
+    
+    dataset = ReferExpressionDataset(task="refcoco",
+                                     dataroot="data/datasets/refcoco/",
                                      annotations_jsonpath="",
                                      split="val",
                                      image_features_reader=image_features_reader,
@@ -253,8 +292,8 @@ def main():
                                      bert_model=args.bert_model,
                                      clean_datasets=True,
                                      padding_index=0,
-                                     max_seq_length=24,
-                                     max_region_num=200,
+                                     max_seq_length=20,
+                                     max_region_num=201,
                                      )
 
     dataloader = DataLoader(dataset=dataset, batch_size=4,
@@ -262,23 +301,30 @@ def main():
 
     dataset_iter = iter(dataloader)
 
-    features, spatials, image_mask, caption, target, input_mask, segment_ids, co_attention_mask, image_id, grid_vec = next(dataset_iter)
+    features, spatials, image_mask, caption, target, input_mask, segment_ids, co_attention_mask, image_id, mask = next(dataset_iter)
     
-    pprint(f'features: {features.shape}, spatials: {spatials.shape}, image_mask: {image_mask.shape}, caption: {caption.shape}, target: {target.shape}, input_mask: {input_mask.shape}, segment_ids: {segment_ids.shape}, co_attention_mask: {co_attention_mask.shape}, image_id: {image_id.shape}, grid_vec: {grid_vec.shape}')
+    pprint(f'features: {features.shape}, spatials: {spatials.shape}, image_mask: {image_mask.shape}, caption: {caption.shape}, target: {target.shape}, input_mask: {input_mask.shape}, segment_ids: {segment_ids.shape}, co_attention_mask: {co_attention_mask.shape}, image_id: {image_id.shape}, mask: {mask.shape}')
+    
+    for mask_ in mask:
+        plt.imshow(mask_)
+        plt.show()
+    # ### Model Description ###
+    # config.v_target_size = 1601
+    # config.visual_target = 0
+    # config.task_specific_tokens = True
+    # config.dynamic_attention = True
+    # config.model = "bert"
+    
+    # task_tokens = caption.new().resize_(caption.size(0), 1).fill_(18)
+    
+    # model = Vilbert(config=config, default_gpu=False)
+    
+    # model(caption, features, spatials, segment_ids, input_mask, image_mask, co_attention_mask, task_tokens)
     
     
-    ### Model Description ###
-    config.v_target_size = 1601
-    config.visual_target = 0
-    config.task_specific_tokens = True
-    config.dynamic_attention = True
-    config.model = "bert"
-    
-    task_tokens = caption.new().resize_(caption.size(0), 1).fill_(18)
-    
-    #model = Vilbert(config=config, default_gpu=False)
-    
-    #model(caption, features, spatials, segment_ids, input_mask, image_mask, co_attention_mask, task_tokens)
+    # task_batch_size, task_num_iters, task_ids, task_datasets_train, task_datasets_val, task_dataloader_train, task_dataloader_val = LoadDatasets(
+    #     args, task_cfg, args.tasks.split("-")
+    # )
     
 if __name__ == "__main__":
 

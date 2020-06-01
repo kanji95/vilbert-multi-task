@@ -38,6 +38,7 @@ save/
 logs/
 results/
 tools/
+runs/
 
 # Checkpoints directory
 checkpoints/

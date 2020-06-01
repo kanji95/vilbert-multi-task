@@ -4,6 +4,7 @@
 # LICENSE file in the root directory of this source tree.
 
 import os
+import json
 
 import torch
 from torch.utils.data import Dataset
@@ -75,6 +76,7 @@ class ReferExpressionDataset(Dataset):
         padding_index: int = 0,
         max_seq_length: int = 20,
         max_region_num: int = 60,
+        target_file: str = '',
     ):
         self.split = split
 
@@ -101,6 +103,10 @@ class ReferExpressionDataset(Dataset):
         self.entries = self._load_annotations(clean_datasets)
 
         self.max_region_num = max_region_num
+        
+        self.target_dim = int(target_file.split(".")[0][-2:])
+        with open(os.path.join(self.dataroot, target_file), 'r') as f:
+            self.target_data = json.load(f)
 
         clean_train = "_cleaned" if clean_datasets else ""
 
@@ -230,6 +236,7 @@ class ReferExpressionDataset(Dataset):
         entry = self.entries[index]
 
         image_id = entry["image_id"]
+        caption_id = entry["sent_id"]
         ref_box = entry["refBox"]
 
         ref_box = [
@@ -301,6 +308,14 @@ class ReferExpressionDataset(Dataset):
         caption = entry["token"]
         input_mask = entry["input_mask"]
         segment_ids = entry["segment_ids"]
+        
+        indices, values = self.target_data.get(str(image_id), {}).get(str(caption_id))
+        grid_vec = torch.zeros(self.target_dim*self.target_dim) 
+        for idx in range(len(indices)):
+            index = indices[idx]
+            grid_vec[index] = values[idx]
+            
+        grid_vec = torch.FloatTensor(grid_vec)
 
         return (
             features,
@@ -312,6 +327,7 @@ class ReferExpressionDataset(Dataset):
             segment_ids,
             co_attention_mask,
             image_id,
+            grid_vec,
         )
 
     def __len__(self):
