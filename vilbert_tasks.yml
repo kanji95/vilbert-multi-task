@@ -319,14 +319,14 @@ TASK18:
   loss: BCEWithLogitLoss
   process: normal
   task_id: 18
-  dataroot: /ssd_scratch/cvit/kanishk/flickr30k/
-  features_h5path1: /ssd_scratch/cvit/kanishk/flickr30k/flickr30k_resnext152_faster_rcnn_genome.lmdb
-  features_h5path2: /ssd_scratch/cvit/kanishk/flickr30k/flickr30k_gt_resnext152_faster_rcnn_genome.lmdb
+  dataroot: data/datasets/flickr30k/
+  features_h5path1: data/datasets/flickr30k/flickr30k_resnext152_faster_rcnn_genome.lmdb
+  features_h5path2: data/datasets/flickr30k/flickr30k_gt_resnext152_faster_rcnn_genome.lmdb
   train_annotations_jsonpath: ''
   val_annotations_jsonpath: ''
   max_seq_length: 24
   max_region_num: 200
-  batch_size: 32
+  batch_size: 4
   train_split: train
   val_split: val
   lr: 0.000002
