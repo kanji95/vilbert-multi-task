@@ -317,6 +317,14 @@ class ReferExpressionDataset(Dataset):
             
         grid_vec = torch.FloatTensor(grid_vec)
 
+        indices, values = self.target_data.get(str(image_id), {}).get(str(caption_id))
+        grid_vec = torch.zeros(self.target_dim*self.target_dim) 
+        for idx in range(len(indices)):
+            index = indices[idx]
+            grid_vec[index] = values[idx]
+            
+        grid_vec = torch.FloatTensor(grid_vec)
+
         return (
             features,
             spatials,
