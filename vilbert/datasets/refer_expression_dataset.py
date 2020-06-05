@@ -105,7 +105,7 @@ class ReferExpressionDataset(Dataset):
         self.max_region_num = max_region_num
         
         self.target_dim = int(target_file.split(".")[0][-2:])
-        with open(os.path.join(self.dataroot, target_file), 'r') as f:
+        with open(os.path.join(self.dataroot, task, target_file), 'r') as f:
             self.target_data = json.load(f)
 
         clean_train = "_cleaned" if clean_datasets else ""
