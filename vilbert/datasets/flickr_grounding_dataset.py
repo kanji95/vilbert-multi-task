@@ -264,6 +264,7 @@ class FlickrGroundingDataset(Dataset):
                 os.path.join(self.dataroot, "cache", "flickr_test_ids.npy")
             )
             remove_ids = [int(x) for x in remove_ids]
+            remove_ids += [179717373, 2442012496, 2652311904, 652542470, 3923857105, 4797050581] ## when changing the max_num_regions
 
         with open(
             os.path.join(
